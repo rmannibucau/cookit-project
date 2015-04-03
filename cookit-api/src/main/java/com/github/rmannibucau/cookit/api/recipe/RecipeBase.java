@@ -40,7 +40,6 @@ abstract class RecipeBase {
     private final Collection<String> configurations = new LinkedList<>();
     private final Collection<ConfigurationProvider> configurationProviders = new LinkedList<>();
     private final Map<String, Object> propertiesConfigurations = new HashMap<>();
-    private final Collection<Runnable> tasks = new LinkedList<>();
 
     private boolean configured = false;
 
@@ -353,9 +352,5 @@ abstract class RecipeBase {
 
     public Map<String, Object> getPropertiesConfigurations() {
         return propertiesConfigurations;
-    }
-
-    public Collection<Runnable> getTasks() {
-        return tasks;
     }
 }
