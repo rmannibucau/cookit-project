@@ -1,6 +1,6 @@
 	<!-- Fixed navbar -->
     <header class="navbar navbar-default navbar-static-top" id="top" role="banner">
-      <a href="https://github.com/rmannibucau/cookit">
+      <a href="https://github.com/cookit-project/cookit">
         <img style="position: absolute; top: 0; right: 0; border: 0;"
              src="img/github-fork.png" alt="Fork me on GitHub"
              data-canonical-src="img/github-fork.png">
