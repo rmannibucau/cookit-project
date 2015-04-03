@@ -1,7 +1,7 @@
 package com.github.rmannibucau.cookit.maven.resolver;
 
 import com.github.rmannibucau.cookit.api.recipe.Recipe;
-import com.github.rmannibucau.cookit.api.recipe.RecipeBuilder;
+import com.github.rmannibucau.cookit.api.recipe.Recipes;
 import org.apache.commons.io.FileUtils;
 import org.junit.Test;
 
@@ -22,7 +22,7 @@ public class MavenResolverTest {
 
     @Test
     public void resolveJar() throws IOException {
-        Recipe.cook(JarRecipe.class);
+        Recipes.cook(JarRecipe.class);
         assertNotNull(JarRecipe.lang3);
         assertEquals(
             new File(WORK_DIR, "org/apache/commons/commons-lang3/3.3.2/commons-lang3-3.3.2.jar").getCanonicalFile(),
@@ -31,25 +31,30 @@ public class MavenResolverTest {
 
     @Test
     public void resolveWar() throws IOException {
-        Recipe.cook(WarRecipe.class);
+        Recipes.cook(WarRecipe.class);
         assertNotNull(WarRecipe.webaccess);
         assertEquals(
                 new File(WORK_DIR, "org/apache/openejb/tomee-webaccess/1.7.1/tomee-webaccess-1.7.1.war").getCanonicalFile(),
                 WarRecipe.webaccess.getCanonicalFile());
     }
 
-    public static class ConfigRecipe extends RecipeBuilder {
+    public static class ConfigRecipe extends Recipe {
         @Override
-        protected void configure() {
+        public void configure() {
             configuration("cookit.maven.localRepository", WORK_DIR.getAbsolutePath());
+        }
+
+        @Override
+        public void recipe() {
+            // no-op
         }
     }
 
-    public static class JarRecipe extends RecipeBuilder {
+    public static class JarRecipe extends Recipe {
         private static File lang3;
 
         @Override
-        protected void configure() {
+        public void recipe() {
             include(ConfigRecipe.class);
             task((MavenResolver mvn) -> {
                 lang3 = mvn.resolve("org.apache.commons:commons-lang3:3.3.2");
@@ -57,11 +62,11 @@ public class MavenResolverTest {
         }
     }
 
-    public static class WarRecipe extends RecipeBuilder {
+    public static class WarRecipe extends Recipe {
         private static File webaccess;
 
         @Override
-        protected void configure() {
+        public void recipe() {
             include(ConfigRecipe.class);
             task((MavenResolver mvn) -> {
                 webaccess = mvn.resolve("org.apache.openejb:tomee-webaccess:war:1.7.1");

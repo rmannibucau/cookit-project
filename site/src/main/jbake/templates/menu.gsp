@@ -13,7 +13,7 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
-          <a class="navbar-brand" href="<%if (content.rootpath) {%>${content.rootpath}<% } else { %>/<% }%>">Java Provisioning Tool (JPT)</a>
+          <a class="navbar-brand" href="<%if (content.rootpath) {%>${content.rootpath}<% } else { %>/<% }%>">CooKit</a>
         </div>
         <div class="navbar-collapse collapse">
           <ul class="nav navbar-nav navbar-right">

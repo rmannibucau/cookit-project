@@ -9,4 +9,6 @@ public interface Container extends AutoCloseable {
     void close();
 
     Object[] createParameters(Object lambda);
+
+    void fire(Object event);
 }

@@ -21,12 +21,15 @@
       <artifactId>cookit-api</artifactId>
       <version>${project.version}</version>
     </dependency>
-
+    <dependency>
+      <groupId>com.github.rmannibucau</groupId>
+      <artifactId>cookit-core</artifactId>
+      <version>${project.version}</version>
+    </dependency>
     <dependency>
       <groupId>com.github.rmannibucau</groupId>
       <artifactId>cookit-maven</artifactId>
       <version>${project.version}</version>
-      <scope>test</scope>
     </dependency>
   </dependencies>
 </project>

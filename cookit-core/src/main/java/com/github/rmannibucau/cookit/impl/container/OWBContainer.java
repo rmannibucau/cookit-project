@@ -81,6 +81,11 @@ public class OWBContainer implements Container {
     }
 
     @Override
+    public void fire(final Object event) {
+        webBeansContext.getBeanManagerImpl().fireEvent(event);
+    }
+
+    @Override
     public void close() {
         if (webBeansContext != null) {
             creationalContexts.stream().forEach(CreationalContext::release);

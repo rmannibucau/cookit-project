@@ -54,7 +54,7 @@
 
                 // builder
                 def builderTemplate = new File(project.basedir, 'src/main/template/builder.template').text
-                def outputFile = new File(project.basedir, 'target/generated-sources/fi/com/github/rmannibucau/cookit/api/recipe/RecipeBuilder.java')
+                def outputFile = new File(project.basedir, 'target/generated-sources/fi/com/github/rmannibucau/cookit/api/recipe/Recipe.java')
                 outputFile.parentFile.mkdirs()
                 outputFile.write(engine.createTemplate(builderTemplate).make([ "max": maxParams, "names": names ]).toString(), "UTF-8")
               ]]></source>

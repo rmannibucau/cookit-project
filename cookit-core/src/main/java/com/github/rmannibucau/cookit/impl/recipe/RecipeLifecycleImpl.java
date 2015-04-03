@@ -3,10 +3,14 @@ package com.github.rmannibucau.cookit.impl.recipe;
 import com.github.rmannibucau.cookit.api.configuration.ConfigurationProvider;
 import com.github.rmannibucau.cookit.api.environment.Environment;
 import com.github.rmannibucau.cookit.api.environment.Node;
+import com.github.rmannibucau.cookit.api.event.RecipeConfigured;
+import com.github.rmannibucau.cookit.api.event.RecipeCooked;
+import com.github.rmannibucau.cookit.api.event.RecipeCreated;
 import com.github.rmannibucau.cookit.api.recipe.Recipe;
 import com.github.rmannibucau.cookit.impl.configuration.RawConfiguration;
 import com.github.rmannibucau.cookit.impl.environment.NodeImpl;
-import com.github.rmannibucau.cookit.spi.RecipeProvider;
+import com.github.rmannibucau.cookit.spi.Container;
+import com.github.rmannibucau.cookit.spi.RecipeLifecycle;
 import org.apache.commons.lang3.text.StrLookup;
 import org.apache.commons.lang3.text.StrSubstitutor;
 
@@ -16,12 +20,14 @@ import java.io.InputStream;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.Properties;
 import javax.enterprise.context.Dependent;
 import javax.enterprise.inject.Produces;
 
 @Dependent
-public class RecipeProviderImpl implements RecipeProvider {
+public class RecipeLifecycleImpl implements RecipeLifecycle {
     @Produces
     private static volatile RawConfiguration configuration;
 
@@ -30,34 +36,60 @@ public class RecipeProviderImpl implements RecipeProvider {
     private static volatile String id;
 
     @Override
-    public Recipe newRecipe(final String id,
-                            final Collection<String> configurationPaths,
-                            final Collection<ConfigurationProvider> configurationProviders,
-                            final Map<String, Object> inMemoryConfiguration,
-                            final Collection<Runnable> tasks) {
-        RecipeProviderImpl.id = id;
+    public void run(final Recipe builder) {
+        Objects.requireNonNull(builder);
+
+        final Container container = builder.container();
+        container.fire(new RecipeCreated(builder));
+
+        container.inject(builder);
+        builder.configure();
+
+        RecipeLifecycleImpl.id = builder.getId();
         final boolean configurationHolder = configuration == null;
-        configuration = new RawConfiguration(buildConfiguration(new NodeImpl(), configurationPaths, inMemoryConfiguration, configurationProviders));
-        return new RecipeImpl(tasks) {
-            @Override
-            public void cook() {
-                try {
-                    super.cook();
-                } finally {
-                    if (configurationHolder) {
-                        configuration = null;
-                    }
-                }
+        final Map<String, Object> map = buildConfiguration(id, new NodeImpl(), builder.getConfigurations(), builder.getPropertiesConfigurations(), builder.getConfigurationProviders());
+        configuration = new RawConfiguration(map);
+
+        try {
+            builder.configured();
+            container.fire(new RecipeConfigured(builder));
+
+            container.inject(builder); // reinject since now we have configurations, note: we could also do the injection without CDI here
+            builder.recipe();
+            container.fire(new RecipeCooked(builder));
+        } finally {
+            if (configurationHolder) {
+                configuration = null;
             }
-        };
+        }
     }
 
     private Map<String, Object> buildConfiguration(
+            final String id,
             final Node node,
             final Collection<String> configurations,
             final Map<String, Object> propertiesConfigurations,
             final Collection<ConfigurationProvider> configurationProviders) {
         final Map<String, Object> aggregatedConfiguration = configuration == null ? new HashMap<>() : configuration.getMap();
+
+        { // default classpath config based on recipe id
+            final InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream(Optional.of(id).orElse("cookit") + ".properties");
+            if (is != null) {
+                try {
+                    final Properties p = new Properties();
+                    p.load(is);
+                    p.entrySet().stream().forEach(e -> aggregatedConfiguration.put(e.getKey().toString(), e.getValue()));
+                } catch (final IOException e) {
+                    throw new IllegalArgumentException(e);
+                } finally {
+                    try {
+                        is.close();
+                    } catch (final IOException e) {
+                        // no-op
+                    }
+                }
+            }
+        }
         aggregatedConfiguration.putAll(propertiesConfigurations);
         configurations.stream().forEach(it -> {
             try (final InputStream is = it.startsWith("classpath:") ?

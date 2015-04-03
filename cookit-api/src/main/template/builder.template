@@ -7,7 +7,7 @@ import com.github.rmannibucau.cookit.api.task.TaskException;
 <% (1..max).each{ i -> %>import com.github.rmannibucau.cookit.api.task.${names[i]["name"]};
 <% } %>import com.github.rmannibucau.cookit.spi.Container;
 
-public abstract class RecipeBuilder extends RecipeBuilderBase {
+public abstract class Recipe extends RecipeBase {
     private Container container;
     <% (1..max).each{ i -> %>
     protected ${names[i]["generics"]} void task(final ${names[i]["name"]}${names[i]["generics"]} task) {
@@ -21,7 +21,7 @@ public abstract class RecipeBuilder extends RecipeBuilderBase {
     }
 
     @Override
-    protected Container container() {
+    public Container container() {
         return container;
     }
 

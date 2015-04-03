@@ -9,8 +9,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Locale;
 import java.util.Properties;
+import javax.enterprise.context.Dependent;
 
 // let it be a cdi bean as well if needed
+@Dependent
 public class NodeImpl implements Node {
     private String family;
 

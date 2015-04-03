@@ -28,31 +28,102 @@
         <!-- code samples -->
         <ul class="nav nav-tabs">
           <li class="active"><a href="#codesample1" data-toggle="tab">Hello Recipe</a></li>
-          <li><a href="#codesample2" data-toggle="tab">CDI Recipe</a></li>
+          <li class="active"><a href="#codesample2" data-toggle="tab">Simple Tomcat Recipe</a></li>
+          <li><a href="#codesample3" data-toggle="tab">CDI Recipe</a></li>
+          <li><a href="#codesample4" data-toggle="tab">Run a Recipe</a></li>
+          <li><a href="#codesample5" data-toggle="tab">Change your recipe with the machine</a></li>
         </ul>
         <div class="tab-content">
-          <div class="tab-pane active" id="codesample1">
-            <pre class="prettyprint"><code class="java">import com.github.rmannibucau.cookit.api.recipe.RecipeBuilder;
+          <div class="tab-pane" id="codesample1">
+            <pre class="prettyprint"><code class="java">import com.github.rmannibucau.cookit.api.recipe.Recipe;
 
-public class HelloRecipe extends RecipeBuilder {
+public class TomcatRecipe extends Recipe {
+  @Inject
+  @Value(key = "tomcat.base", or = "/usr/share/tomcat")
+  private String base;
+
+  @Inject
+  @Value(key = "tomcat.tmp", or = "/tmp/tomcat")
+  private String tmpDir;
+
+  @Inject
+  @Value(key = "tomcat.target")
+  private String zip;
+
   @Override
-  protected void configure() {
-    task(() ->
-          System.out.println("Hello CooKit!"));
-  });
+  public void configure() {
+    id("tomcat");
+
+    configuration((configuration, node) -> {
+      configuration.put("cookit.maven.artifacts", "tomcat");
+      configuration.put("tomcat.coords", "org.apache.tomcat:tomcat:zip:8.0.20");
+      configuration.put("tomcat.target", Paths.get(tmpDir, "tomcat-recipe/tomcat.zip").toFile().getAbsolutePath());
+    });
+  }
+
+  @Override
+  public void recipe() {
+    include(MavenRecipe.class);
+    unzip(zip, base, true);
+    rmDir(tmpDir);
+  }
+}</code></pre>
+          </div>
+          <div class="tab-pane active" id="codesample2">
+            <pre class="prettyprint"><code class="java">import com.github.rmannibucau.cookit.api.environment.Value;
+import com.github.rmannibucau.cookit.api.recipe.Recipe;
+import com.github.rmannibucau.cookit.maven.recipe.MavenRecipe;
+
+public class TomcatRecipe extends Recipe {
+  @Inject
+  @Value(key = "name", or = "CooKit")
+  private String name;
+
+  @Override
+  public void recipe() {
+    System.out.println("Hello " + name);
+  }
 }</code></pre>
           </div>
 
-          <div class="tab-pane" id="codesample2">
+          <div class="tab-pane" id="codesample3">
             <pre class="prettyprint"><code class="java">import com.github.rmannibucau.cookit.api.recipe.RecipeBuilder;
 
-public class HelloRecipe extends RecipeBuilder {
+public class HelloRecipe extends Recipe {
   @Override
   protected void configure() {
     task((MyCdiBean bean) ->
           System.out.println("Hello " + bean.name()));
   });
 }</code></pre>
+          </div>
+          <div class="tab-pane" id="codesample4">
+            <pre class="prettyprint"><code class="java">import com.github.rmannibucau.cookit.api.recipe.RecipeBuilder;
+import javax.inject.Inject;
+
+public class FamilyRecipe extends Recipe {
+  @Inject
+  private Node node;
+
+  @Override
+  protected void configure() {
+    switch (node.family()) {
+        case "ubuntu":
+            System.out.println("Yeah Ubuntu!");
+            break;
+
+        case "windows":
+            System.out.println("Let's try!");
+            break;
+
+        default:
+            throw new RuntimeException("?ot sure we should proceed);
+    }
+  });
+}</code></pre>
+          </div>
+          <div class="tab-pane" id="codesample5">
+            <pre class="prettyprint"><code class="java">Recipes.cook(MyRecipe.class);</code></pre>
           </div>
         </div>
       </div>

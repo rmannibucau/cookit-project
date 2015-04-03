@@ -1,6 +1,8 @@
 package com.github.rmannibucau.cookit.impl.configuration;
 
 import com.github.rmannibucau.cookit.api.environment.Value;
+import com.github.rmannibucau.cookit.api.event.RecipeConfigured;
+import com.github.rmannibucau.cookit.api.event.RecipeCreated;
 
 import java.io.File;
 import java.net.MalformedURLException;
@@ -11,9 +13,11 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import javax.enterprise.context.Dependent;
+import javax.enterprise.event.Observes;
 import javax.enterprise.inject.Produces;
 import javax.enterprise.inject.spi.InjectionPoint;
 import javax.inject.Inject;
@@ -23,9 +27,19 @@ import static java.util.Arrays.asList;
 @Dependent
 public class ConfigurationProducer {
     private static final Logger LOGGER = Logger.getLogger(ConfigurationProducer.class.getName());
+    public static volatile boolean silent = false;
 
     @Inject
     private RawConfiguration configuration;
+
+
+    public void silent(@Observes final RecipeCreated configured) {
+        silent = true;
+    }
+
+    public void noisy(@Observes final RecipeConfigured configured) {
+        silent = false;
+    }
 
     @Produces
     @Value("")
@@ -35,9 +49,11 @@ public class ConfigurationProducer {
 
         final Object orDefault;
         if (configuration == null) {
-            LOGGER.warning(
-                    "Using @Value before container is started (ie in builder#configure but not a lambda), configuration is ignored then. " +
-                    "You can use Provider<X> to avoid it.");
+            if (silent) {
+                LOGGER.log(silent ? Level.FINER : Level.WARNING,
+                        "Using @Value before container is started (ie in builder#configure but not a lambda), configuration is ignored then. " +
+                                "You can use Provider<X> to avoid it.");
+            }
             orDefault = annotation.or();
         } else {
             orDefault = configuration.getMap().getOrDefault(key, annotation.or());
