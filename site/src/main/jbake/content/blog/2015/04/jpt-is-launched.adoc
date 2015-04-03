@@ -1,0 +1,13 @@
+= CooKit site is Launched
+Jonathan Bullock
+2015-04-05
+:jbake-type: post
+:jbake-tags: general
+:jbake-status: published
+
+
+CooKit is still under development but to let you follow its evolution
+the website is already up.
+
+It will evolve with the product but the goal is to keep it up to date until the first release!
+

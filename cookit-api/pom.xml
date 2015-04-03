@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="
+            http://maven.apache.org/POM/4.0.0
+            http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <parent>
+    <artifactId>cookit</artifactId>
+    <groupId>com.github.rmannibucau</groupId>
+    <version>1.0-SNAPSHOT</version>
+  </parent>
+  <modelVersion>4.0.0</modelVersion>
+
+  <artifactId>cookit-api</artifactId>
+  <name>CooKit :: API</name>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.codehaus.groovy.maven</groupId>
+        <artifactId>gmaven-plugin</artifactId>
+        <version>1.0</version>
+        <executions>
+          <execution>
+            <id>create-functional-interfaces</id>
+            <phase>generate-sources</phase>
+            <goals>
+              <goal>execute</goal>
+            </goals>
+            <configuration>
+              <source><![CDATA[
+                import groovy.text.SimpleTemplateEngine
+
+                def maxParams = 10 // 10 should be fine for most of cases otherwise you can still use builder injections
+
+                def engine = new SimpleTemplateEngine()
+
+                // tasks
+                def template = new File(project.basedir, 'src/main/template/task.template').text
+                def outputDir = new File(project.basedir, 'target/generated-sources/fi/com/github/rmannibucau/cookit/api/task/')
+                outputDir.mkdirs()
+                def names = []
+                (1..maxParams).each { i ->
+                  def plural = (i > 1 ? 's' : '')
+                  def className = "CooKitTaskWith${i}Parameter${plural}"
+
+                  def generics = (1..i).collect({ idx -> 'T' + idx }).join(',')
+                  def params = (1..i).collect({ idx -> 'T' + idx + ' param' + idx }).join(',')
+                  def binding = [ "generics": generics, "params": params, "className": className ]
+                  new File(outputDir, "${className}.java").write(engine.createTemplate(template).make(binding).toString(), "UTF-8")
+
+                  names[i] = [ "name": className, "generics": '<' + generics + '>' ]
+                }
+
+                // builder
+                def builderTemplate = new File(project.basedir, 'src/main/template/builder.template').text
+                def outputFile = new File(project.basedir, 'target/generated-sources/fi/com/github/rmannibucau/cookit/api/recipe/RecipeBuilder.java')
+                outputFile.parentFile.mkdirs()
+                outputFile.write(engine.createTemplate(builderTemplate).make([ "max": maxParams, "names": names ]).toString(), "UTF-8")
+              ]]></source>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>build-helper-maven-plugin</artifactId>
+        <version>1.9.1</version>
+        <executions>
+          <execution>
+            <id>add-source</id>
+            <phase>generate-sources</phase>
+            <goals>
+              <goal>add-source</goal>
+            </goals>
+            <configuration>
+              <sources>
+                <source>${project.basedir}/target/generated-sources/fi</source>
+              </sources>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+</project>

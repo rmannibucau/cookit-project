@@ -1,0 +1,141 @@
+<div class="index-header" id="content">
+  <div class="container">
+    <div class="row">
+      <div class="col-sm-offset-2 col-sm-8 text-center">
+        <h2><strong>CooKit</strong></h2>
+        <h2><strong>Java</strong> Provisining Tooling based on Java 8 <string>lambdas</string>.</h2>
+        <div class="buttons">
+          <a class="btn btn-default btn-lg" href="download.html" role="button"><i class="entypo-install"></i> Download Now!</a><br>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container highlight">
+  <div class="row">
+    <div class="col-sm-12 text-center">
+      <h2>Java for your Provisioning Recipes!</h2>
+      <p>CooKit is created to provide a Java based provisioning tool allowing you to write recipes 100% in Java.</p>
+    </div>
+  </div>
+</div>
+
+<div class="highlight highlight-polyglot">
+  <div class="container">
+    <div class="row">
+      <div class="col-sm-7 code-samples">
+        <!-- code samples -->
+        <ul class="nav nav-tabs">
+          <li class="active"><a href="#codesample1" data-toggle="tab">Hello Recipe</a></li>
+          <li><a href="#codesample2" data-toggle="tab">CDI Recipe</a></li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codesample1">
+            <pre class="prettyprint"><code class="java">import com.github.rmannibucau.cookit.api.recipe.RecipeBuilder;
+
+public class HelloRecipe extends RecipeBuilder {
+  @Override
+  protected void configure() {
+    task(() ->
+          System.out.println("Hello CooKit!"));
+  });
+}</code></pre>
+          </div>
+
+          <div class="tab-pane" id="codesample2">
+            <pre class="prettyprint"><code class="java">import com.github.rmannibucau.cookit.api.recipe.RecipeBuilder;
+
+public class HelloRecipe extends RecipeBuilder {
+  @Override
+  protected void configure() {
+    task((MyCdiBean bean) ->
+          System.out.println("Hello " + bean.name()));
+  });
+}</code></pre>
+          </div>
+        </div>
+      </div>
+      <div class="col-sm-5 text-right">
+        <h2>Java 8</h2>
+        <p>Thanks to Java 8 streams and lambda you can quickly express your recipes.</p>
+
+        <h2>CDI</h2>
+        <p>Thanks to CDI integration you can write code as usual if you need and reuse most of your code very easily! No need to lear yet another programming model.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="highlight highlight-general">
+  <div class="container">
+    <div class="row">
+      <div class="col-sm-6 text-center">
+        <h3>Goal</h3>
+        <i class="glyphicon glyphicon-road bigicon"></i>
+        <p>Write <strong>as usual</strong> the way your provision an instance whatever it is a developer instance or a production server one.</p>
+      </div>
+
+      <div class="col-sm-6 text-center">
+        <h3>Keep your habits</h3>
+        <i class="glyphicon glyphicon-refresh bigicon"></i>
+        <p>
+          CooKit doesn't force you to use its full stack, just reuse Java libraries you are used to.
+          CooKit just provides you a simple structure to write and launch recipes with basic bricks.
+        </p>
+    </div>
+  </div>
+</div>
+
+<div class="highlight highlight-fun">
+  <div class="container">
+    <div class="row">
+      <div class="col-sm-6">
+        <h2>CooKit <em>simple</em></h2>
+        <p>DevOps doesn't mean not understandable! Enjoy having reproducible installation without losing any time learning another language.</p>
+      </div>
+      <div class="col-sm-6 highlight-fun-right">
+        <ul>
+          <li><p>CooKit is <em>lightweight</em>.</p></li>
+          <li><p>CooKit is <em>fast</em>.</p></li>
+          <li><p>CooKit is just plan java so ou can crete <em>shades</em> or just launch it with your <em>own classpath</em>.</p></li>
+          <li><p>CooKit is <em>extensible</em>.</p></li>
+          <li><p>CooKit extenions are <em>powerful</em>.</p></li>
+          <li><p>CooKit recipes are <em>composable</em>.</p></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="row highlight highlight-stack">
+      <div class="col-sm-12 text-center">
+        <p>CooKit is a solution to standardize writing and execution of provisioning recipes 100% based on Java.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="highlight highlight-who">
+  <div class="container">
+    <div class="row">
+      <div class="col-sm-12">
+        <h3>CooKit in 3 words</h3>
+        <div class="row">
+          <div class="col-sm-4 bigtext">
+            Java 8
+          </div>
+          <div class="col-sm-4 owb">
+            <img src="img/owb.png" width="150">
+          </div>
+          <div class="col-sm-4">
+            <img src="img/cdi.png" width="300">
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-sm-12 entergame">
+            <em>Enter into the game!</em>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

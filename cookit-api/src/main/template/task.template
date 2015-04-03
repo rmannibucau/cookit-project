@@ -1,0 +1,8 @@
+package com.github.rmannibucau.cookit.api.task;
+
+import java.io.Serializable;
+
+@FunctionalInterface
+public interface ${className}<${generics}> extends Serializable {
+    void run(${params});
+}

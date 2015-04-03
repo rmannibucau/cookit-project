@@ -1,0 +1,50 @@
+package com.github.rmannibucau.cookit.api.recipe;
+
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+
+import com.github.rmannibucau.cookit.api.task.TaskException;
+<% (1..max).each{ i -> %>import com.github.rmannibucau.cookit.api.task.${names[i]["name"]};
+<% } %>import com.github.rmannibucau.cookit.spi.Container;
+
+public abstract class RecipeBuilder extends RecipeBuilderBase {
+    private Container container;
+    <% (1..max).each{ i -> %>
+    protected ${names[i]["generics"]} void task(final ${names[i]["name"]}${names[i]["generics"]} task) {
+        task(() -> invoke(task));
+    }
+    <% } %>
+
+    @Override
+    public void setContainer(final Container container) {
+        this.container = container;
+    }
+
+    @Override
+    protected Container container() {
+        return container;
+    }
+
+    // just a helper to convert parameterized lambda to runnable
+    private void invoke(final Object lambda) {
+        final Package cookitPackage = TaskException.class.getPackage();
+        for (final Class<?> i : lambda.getClass().getInterfaces()) {
+            if (i.getPackage() == cookitPackage) {
+                try {
+                    final Method method = i.getMethods()[0];
+                    method.invoke(lambda, container.createParameters(lambda));
+                } catch (final IllegalAccessException e) {
+                    throw new TaskException(e);
+                } catch (final InvocationTargetException e) {
+                    final Throwable cause = e.getCause();
+                    if (RuntimeException.class.isInstance(cause)) {
+                        throw RuntimeException.class.cast(cause);
+                    }
+                    throw new TaskException(e);
+                }
+                return;
+            }
+        }
+        throw new IllegalArgumentException("not a compatible lambda: " + lambda);
+    }
+}
