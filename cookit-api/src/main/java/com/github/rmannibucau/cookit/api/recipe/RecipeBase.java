@@ -1,6 +1,5 @@
 package com.github.rmannibucau.cookit.api.recipe;
 
-import com.github.rmannibucau.cookit.api.configuration.ConfigurationProvider;
 import com.github.rmannibucau.cookit.api.task.FileTask;
 import com.github.rmannibucau.cookit.spi.Container;
 import com.github.rmannibucau.cookit.spi.RecipeLifecycle;
@@ -34,11 +33,13 @@ import java.util.zip.ZipInputStream;
 
 import static javax.xml.bind.DatatypeConverter.printBase64Binary;
 
-// inherited by RecipeBuilder to have task methods
+// inherited by Recipe to have task methods
 abstract class RecipeBase {
     private String id = "cookit-recipe";
     private final Collection<String> configurations = new LinkedList<>();
+    private final Collection<NoArgConfigurationProvider> noArgConfigurationProviders = new LinkedList<>();
     private final Collection<ConfigurationProvider> configurationProviders = new LinkedList<>();
+    private final Collection<ConfigurationProviderWithConfiguration> configurationProvidersWithConfiguration = new LinkedList<>();
     private final Map<String, Object> propertiesConfigurations = new HashMap<>();
 
     private boolean configured = false;
@@ -87,10 +88,25 @@ abstract class RecipeBase {
         this.configurationProviders.add(provider);
     }
 
+    protected void configuration(final ConfigurationProviderWithConfiguration provider) {
+        assertNotConfigured();
+        this.configurationProvidersWithConfiguration.add(provider);
+    }
+
+    protected void configuration(final NoArgConfigurationProvider provider) {
+        assertNotConfigured();
+        this.noArgConfigurationProviders.add(provider);
+    }
+
     private void assertNotConfigured() {
         if (configured) {
             throw new IllegalStateException("can't call configuration method once configure() method was called, ie not in recipe()");
         }
+    }
+
+    protected  <T> void set(final String key, final T value) {
+        assertNotConfigured();
+        container().configuration().put(key, value);
     }
 
     protected void task(final Runnable task) {
@@ -352,5 +368,13 @@ abstract class RecipeBase {
 
     public Map<String, Object> getPropertiesConfigurations() {
         return propertiesConfigurations;
+    }
+
+    public Collection<ConfigurationProviderWithConfiguration> getConfigurationProvidersWithConfiguration() {
+        return configurationProvidersWithConfiguration;
+    }
+
+    public Collection<NoArgConfigurationProvider> getNoArgConfigurationProviders() {
+        return noArgConfigurationProviders;
     }
 }

@@ -1,5 +1,7 @@
 package com.github.rmannibucau.cookit.spi;
 
+import java.util.Map;
+
 public interface Container extends AutoCloseable {
     Container start();
     boolean isStarted();
@@ -9,6 +11,8 @@ public interface Container extends AutoCloseable {
     void close();
 
     Object[] createParameters(Object lambda);
+
+    Map<String, Object> configuration();
 
     void fire(Object event);
 }

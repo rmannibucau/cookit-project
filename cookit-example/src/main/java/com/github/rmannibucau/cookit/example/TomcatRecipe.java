@@ -36,11 +36,11 @@ public class TomcatRecipe extends Recipe {
     public void configure() {
         id("tomcat");
 
-        configuration((configuration, node) -> {
-            configuration.put("cookit.maven.localRepository", Paths.get(tmpDir, "m2"));
-            configuration.put("cookit.maven.artifacts", "tomcat");
-            configuration.put("tomcat.coords", "org.apache.tomcat:tomcat:zip:" + tomcatVersion);
-            configuration.put("tomcat.target", Paths.get(tmpDir, "tomcat-recipe/tomcat.zip").toFile().getAbsolutePath());
+        configuration(() -> {
+            set("cookit.maven.localRepository", Paths.get(tmpDir, "m2"));
+            set("cookit.maven.artifacts", "tomcat");
+            set("tomcat.coords", "org.apache.tomcat:tomcat:zip:" + tomcatVersion);
+            set("tomcat.target", Paths.get(tmpDir, "tomcat-recipe/tomcat.zip").toFile().getAbsolutePath());
         });
     }
 

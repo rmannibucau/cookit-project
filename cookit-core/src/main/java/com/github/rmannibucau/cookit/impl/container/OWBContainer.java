@@ -1,5 +1,6 @@
 package com.github.rmannibucau.cookit.impl.container;
 
+import com.github.rmannibucau.cookit.impl.configuration.RawConfiguration;
 import com.github.rmannibucau.cookit.impl.thread.ThreadSafeWrapper;
 import com.github.rmannibucau.cookit.spi.Container;
 import org.apache.webbeans.annotation.AnyLiteral;
@@ -21,6 +22,7 @@ import java.lang.reflect.Type;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.Map;
 import java.util.Set;
 import javax.enterprise.context.spi.CreationalContext;
 import javax.enterprise.inject.spi.Annotated;
@@ -78,6 +80,16 @@ public class OWBContainer implements Container {
             e.printStackTrace();
         }
         return instance;
+    }
+
+    private <T> T internalInstance(final Class<T> type) { // for internal normal scoped beans only
+        final BeanManagerImpl bm = webBeansContext.getBeanManagerImpl();
+        return type.cast(bm.getReference(bm.resolve(bm.getBeans(type)), type, null));
+    }
+
+    @Override
+    public Map<String, Object> configuration() {
+        return internalInstance(RawConfiguration.class).getMap();
     }
 
     @Override

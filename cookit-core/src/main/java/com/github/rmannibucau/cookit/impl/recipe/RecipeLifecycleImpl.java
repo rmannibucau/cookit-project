@@ -1,11 +1,11 @@
 package com.github.rmannibucau.cookit.impl.recipe;
 
-import com.github.rmannibucau.cookit.api.configuration.ConfigurationProvider;
 import com.github.rmannibucau.cookit.api.environment.Environment;
 import com.github.rmannibucau.cookit.api.environment.Node;
 import com.github.rmannibucau.cookit.api.event.RecipeConfigured;
 import com.github.rmannibucau.cookit.api.event.RecipeCooked;
 import com.github.rmannibucau.cookit.api.event.RecipeCreated;
+import com.github.rmannibucau.cookit.api.recipe.NoArgConfigurationProvider;
 import com.github.rmannibucau.cookit.api.recipe.Recipe;
 import com.github.rmannibucau.cookit.impl.configuration.RawConfiguration;
 import com.github.rmannibucau.cookit.impl.environment.NodeImpl;
@@ -17,7 +17,6 @@ import org.apache.commons.lang3.text.StrSubstitutor;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -47,8 +46,8 @@ public class RecipeLifecycleImpl implements RecipeLifecycle {
 
         RecipeLifecycleImpl.id = builder.getId();
         final boolean configurationHolder = configuration == null;
-        final Map<String, Object> map = buildConfiguration(id, new NodeImpl(), builder.getConfigurations(), builder.getPropertiesConfigurations(), builder.getConfigurationProviders());
-        configuration = new RawConfiguration(map);
+        configuration = new RawConfiguration(configurationHolder ? new HashMap<>() : configuration.getMap());
+        buildConfiguration(new NodeImpl(), builder);
 
         try {
             builder.configured();
@@ -64,13 +63,8 @@ public class RecipeLifecycleImpl implements RecipeLifecycle {
         }
     }
 
-    private Map<String, Object> buildConfiguration(
-            final String id,
-            final Node node,
-            final Collection<String> configurations,
-            final Map<String, Object> propertiesConfigurations,
-            final Collection<ConfigurationProvider> configurationProviders) {
-        final Map<String, Object> aggregatedConfiguration = configuration == null ? new HashMap<>() : configuration.getMap();
+    private void buildConfiguration(final Node node, final Recipe recipe) {
+        final Map<String, Object> aggregatedConfiguration = configuration.getMap();
 
         { // default classpath config based on recipe id
             final InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream(Optional.of(id).orElse("cookit") + ".properties");
@@ -90,8 +84,8 @@ public class RecipeLifecycleImpl implements RecipeLifecycle {
                 }
             }
         }
-        aggregatedConfiguration.putAll(propertiesConfigurations);
-        configurations.stream().forEach(it -> {
+        aggregatedConfiguration.putAll(recipe.getPropertiesConfigurations());
+        recipe.getConfigurations().stream().forEach(it -> {
             try (final InputStream is = it.startsWith("classpath:") ?
                     Thread.currentThread().getContextClassLoader().getResourceAsStream(it.substring("classpath:".length())) :
                     new FileInputStream(it)) {
@@ -102,7 +96,9 @@ public class RecipeLifecycleImpl implements RecipeLifecycle {
                 throw new IllegalArgumentException(e);
             }
         });
-        configurationProviders.stream().forEach(it -> it.provide(aggregatedConfiguration, node));
+        recipe.getNoArgConfigurationProviders().stream().forEach(NoArgConfigurationProvider::provide);
+        recipe.getConfigurationProviders().stream().forEach(it -> it.provide(node));
+        recipe.getConfigurationProvidersWithConfiguration().stream().forEach(it -> it.provide(aggregatedConfiguration, node));
 
         final StrSubstitutor substitutor = new StrSubstitutor(new StrLookup<String>() {
             @Override
@@ -126,6 +122,5 @@ public class RecipeLifecycleImpl implements RecipeLifecycle {
                 }
             }
         } while (again);
-        return aggregatedConfiguration;
     }
 }
