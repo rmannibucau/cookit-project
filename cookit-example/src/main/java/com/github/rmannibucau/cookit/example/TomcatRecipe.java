@@ -4,13 +4,13 @@ import com.github.rmannibucau.cookit.api.environment.Node;
 import com.github.rmannibucau.cookit.api.environment.Value;
 import com.github.rmannibucau.cookit.api.recipe.Recipe;
 import com.github.rmannibucau.cookit.api.recipe.Recipes;
+import com.github.rmannibucau.cookit.api.recipe.file.EnhancedFileFilter;
 import com.github.rmannibucau.cookit.maven.recipe.MavenRecipe;
 
 import java.io.File;
 import java.nio.file.Paths;
+import java.util.function.Consumer;
 import javax.inject.Inject;
-
-import static java.util.Arrays.asList;
 
 public class TomcatRecipe extends Recipe {
     @Inject
@@ -36,31 +36,32 @@ public class TomcatRecipe extends Recipe {
     public void configure() {
         id("tomcat");
 
-        configuration(() -> {
-            set("cookit.maven.localRepository", Paths.get(tmpDir, "m2"));
-            set("cookit.maven.artifacts", "tomcat");
-            set("tomcat.coords", "org.apache.tomcat:tomcat:zip:" + tomcatVersion);
-            set("tomcat.target", Paths.get(tmpDir, "tomcat-recipe/tomcat.zip").toFile().getAbsolutePath());
-        });
+        set("cookit.maven.localRepository", Paths.get(tmpDir, "m2"));
+        set("cookit.maven.artifacts", "tomcat");
+        set("tomcat.coords", "org.apache.tomcat:tomcat:zip:" + tomcatVersion);
+        set("tomcat.target", Paths.get(tmpDir, "tomcat-recipe/tomcat.zip").toFile().getAbsolutePath());
     }
 
     @Override
     public void recipe() {
+        // download Tomcat
         include(MavenRecipe.class);
 
         // then create the structure
         unzip(zip, base, true);
 
         // make scripts executables
+        final Consumer<File> setExecutable = f -> f.setExecutable(true);
+        final EnhancedFileFilter<String> filterByExtension = (f, e) -> f.getName().endsWith(e);
         switch (node.family()) {
             case "windows":
-                asList(new File(base, "bin").listFiles(f -> f.getName().endsWith(".bat")))
-                    .stream()
-                    .forEach(f -> f.setExecutable(true));
+                withFile(base, "bin")
+                    .filter(filterByExtension, ".bat")
+                    .forEach(setExecutable);
             default:
-                asList(new File(base, "bin").listFiles(f -> f.getName().endsWith(".sh")))
-                        .stream()
-                        .forEach(f -> f.setExecutable(true));
+                withFile(base, "bin")
+                    .filter(filterByExtension, ".sh")
+                    .forEach(setExecutable);
         }
 
         // clean up

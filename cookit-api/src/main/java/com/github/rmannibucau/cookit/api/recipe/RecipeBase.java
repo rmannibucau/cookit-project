@@ -117,6 +117,10 @@ abstract class RecipeBase {
         return printBase64Binary((user + ":" + password).getBytes());
     }
 
+    protected EnhancedFile withFile(final String first, final String... segments) {
+        return new EnhancedFile(Paths.get(first, segments).toFile());
+    }
+
     protected void unzip(final String from, final String to, final boolean stripRoot) {
         final File source = new File(from);
         if (!source.isFile()) {
@@ -298,23 +302,7 @@ abstract class RecipeBase {
             if (!dir.toFile().isDirectory()) {
                 return;
             }
-            try {
-                Files.walkFileTree(dir, new SimpleFileVisitor<Path>() {
-                    @Override
-                    public FileVisitResult postVisitDirectory(final Path dir, final IOException ex) throws IOException {
-                        Files.delete(dir);
-                        return FileVisitResult.CONTINUE;
-                    }
-
-                    @Override
-                    public FileVisitResult visitFile(final Path file, final BasicFileAttributes attrs) throws IOException {
-                        Files.delete(file);
-                        return FileVisitResult.CONTINUE;
-                    }
-                });
-            } catch (final IOException e) {
-                throw new IllegalStateException(e);
-            }
+            CookitFiles.rmDir(dir);
     }
 
     protected void mkdirs(final String directory) {

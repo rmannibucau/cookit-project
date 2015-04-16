@@ -2,6 +2,7 @@ package com.github.rmannibucau.cookit.api.recipe;
 
 import com.github.rmannibucau.cookit.spi.Container;
 
+import java.io.IOException;
 import java.util.Iterator;
 import java.util.ServiceLoader;
 
@@ -39,9 +40,15 @@ public interface Recipes {
             throw new IllegalArgumentException("Pass a recipe as parameter please");
         }
         try {
-            final Class<?> recipe = Thread.currentThread().getContextClassLoader().loadClass(args[0].trim());
+            final String trim = args[0].trim();
+            final Class<?> recipe;
+            if (trim.endsWith(".java")) {
+                recipe = InternalCompiler.compile(trim);
+            } else {
+                recipe = Thread.currentThread().getContextClassLoader().loadClass(trim);
+            }
             cook(Class.class.cast(recipe));
-        } catch (final ClassNotFoundException e) {
+        } catch (final ClassNotFoundException | IOException e) {
             throw new IllegalArgumentException(e);
         }
     }

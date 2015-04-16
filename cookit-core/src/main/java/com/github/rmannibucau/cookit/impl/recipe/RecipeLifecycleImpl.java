@@ -42,11 +42,13 @@ public class RecipeLifecycleImpl implements RecipeLifecycle {
         container.fire(new RecipeCreated(builder));
 
         container.inject(builder);
-        builder.configure();
 
         RecipeLifecycleImpl.id = builder.getId();
         final boolean configurationHolder = configuration == null;
         configuration = new RawConfiguration(configurationHolder ? new HashMap<>() : configuration.getMap());
+
+        builder.configure();
+
         buildConfiguration(new NodeImpl(), builder);
 
         try {
