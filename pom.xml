@@ -22,6 +22,7 @@
     <module>cookit-maven</module>
     <module>site</module>
     <module>cookit-example</module>
+    <module>cookit-bundle</module>
   </modules>
 
   <dependencies>

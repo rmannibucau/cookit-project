@@ -41,14 +41,13 @@ public class RecipeLifecycleImpl implements RecipeLifecycle {
         final Container container = builder.container();
         container.fire(new RecipeCreated(builder));
 
-        container.inject(builder);
-
-        RecipeLifecycleImpl.id = builder.getId();
         final boolean configurationHolder = configuration == null;
         configuration = new RawConfiguration(configurationHolder ? new HashMap<>() : configuration.getMap());
 
+        container.inject(builder);
         builder.configure();
 
+        RecipeLifecycleImpl.id = builder.getId(); // not init before configure()
         buildConfiguration(new NodeImpl(), builder);
 
         try {

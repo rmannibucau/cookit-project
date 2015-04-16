@@ -3,7 +3,6 @@ package com.github.rmannibucau.cookit.example;
 import com.github.rmannibucau.cookit.api.environment.Node;
 import com.github.rmannibucau.cookit.api.environment.Value;
 import com.github.rmannibucau.cookit.api.recipe.Recipe;
-import com.github.rmannibucau.cookit.api.recipe.Recipes;
 import com.github.rmannibucau.cookit.api.recipe.file.EnhancedFileFilter;
 import com.github.rmannibucau.cookit.maven.recipe.MavenRecipe;
 
@@ -12,6 +11,14 @@ import java.nio.file.Paths;
 import java.util.function.Consumer;
 import javax.inject.Inject;
 
+/**
+ * Can be executed with:
+ * $ java \
+ *      -Dtomcat.base=/tmp/tomcat2 -Dtomcat.tmp=/tmp/workr # optional \
+ *      -jar cookit-bundle.jar \
+ *      cookit-example/src/main/java/com/github/rmannibucau/cookit/example/TomcatRecipe.java
+ *
+ */
 public class TomcatRecipe extends Recipe {
     @Inject
     @Value(key = "tomcat.base", or = "/usr/share/tomcat")
@@ -66,13 +73,5 @@ public class TomcatRecipe extends Recipe {
 
         // clean up
         rmDir(tmpDir);
-    }
-
-    public static void main(final String[] args) {
-        // target/ for test
-        System.setProperty("tomcat.base", "target/test/tomcat");
-
-        // run it!
-        Recipes.cook(TomcatRecipe.class);
     }
 }
