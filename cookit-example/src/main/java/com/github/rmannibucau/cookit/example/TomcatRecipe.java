@@ -54,11 +54,11 @@ public class TomcatRecipe extends Recipe {
         // make scripts executables
         switch (node.family()) {
             case "windows":
-                asList(new File(base, "bin").listFiles(f -> f.getName().endsWith(".sh")))
+                asList(new File(base, "bin").listFiles(f -> f.getName().endsWith(".bat")))
                     .stream()
                     .forEach(f -> f.setExecutable(true));
             default:
-                asList(new File(base, "bin").listFiles(f -> f.getName().endsWith(".bat")))
+                asList(new File(base, "bin").listFiles(f -> f.getName().endsWith(".sh")))
                         .stream()
                         .forEach(f -> f.setExecutable(true));
         }
