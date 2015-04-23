@@ -82,19 +82,20 @@ public class OWBContainer implements Container {
         return instance;
     }
 
-    private <T> T internalInstance(final Class<T> type) { // for internal normal scoped beans only
-        final BeanManagerImpl bm = webBeansContext.getBeanManagerImpl();
-        return type.cast(bm.getReference(bm.resolve(bm.getBeans(type)), type, null));
-    }
-
     @Override
     public Map<String, Object> configuration() {
-        return internalInstance(RawConfiguration.class).getMap();
+        return lookup(RawConfiguration.class).getMap();
     }
 
     @Override
     public void fire(final Object event) {
         webBeansContext.getBeanManagerImpl().fireEvent(event);
+    }
+
+    @Override
+    public <T> T lookup(final Class<T> service) {
+        final BeanManagerImpl bm = webBeansContext.getBeanManagerImpl();
+        return service.cast(bm.getReference(bm.resolve(bm.getBeans(service)), service, null));
     }
 
     @Override

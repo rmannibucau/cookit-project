@@ -4,7 +4,6 @@ import com.github.rmannibucau.cookit.api.environment.Node;
 import com.github.rmannibucau.cookit.api.environment.Value;
 import com.github.rmannibucau.cookit.api.recipe.Recipe;
 import com.github.rmannibucau.cookit.api.recipe.file.EnhancedFileFilter;
-import com.github.rmannibucau.cookit.maven.recipe.MavenRecipe;
 
 import java.io.File;
 import java.nio.file.Paths;
@@ -25,7 +24,7 @@ public class TomcatRecipe extends Recipe {
     private String base;
 
     @Inject
-    @Value(key = "tomcat.version", or = "8.0.20")
+    @Value(key = "tomcat.version", or = "8.0.21")
     private String tomcatVersion;
 
     @Inject
@@ -33,28 +32,20 @@ public class TomcatRecipe extends Recipe {
     private String tmpDir;
 
     @Inject
-    @Value(key = "tomcat.target")
-    private String zip;
-
-    @Inject
     private Node node;
 
     @Override
     public void configure() {
         id("tomcat");
-
         set("cookit.maven.localRepository", Paths.get(tmpDir, "m2"));
-        set("cookit.maven.artifacts", "tomcat");
-        set("tomcat.coords", "org.apache.tomcat:tomcat:zip:" + tomcatVersion);
-        set("tomcat.target", Paths.get(tmpDir, "tomcat-recipe/tomcat.zip").toFile().getAbsolutePath());
     }
 
     @Override
     public void recipe() {
-        // download Tomcat
-        include(MavenRecipe.class);
+        rmOnExit(tmpDir);
 
-        // then create the structure
+        // download and unzip tomcat
+        final File zip = mvn("org.apache.tomcat:tomcat:zip:" + tomcatVersion);
         unzip(zip, base, true);
 
         // make scripts executables
@@ -70,8 +61,5 @@ public class TomcatRecipe extends Recipe {
                     .filter(filterByExtension, ".sh")
                     .forEach(setExecutable);
         }
-
-        // clean up
-        rmDir(tmpDir);
     }
 }

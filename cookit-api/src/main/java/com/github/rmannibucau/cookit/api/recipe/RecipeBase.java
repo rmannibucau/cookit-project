@@ -1,5 +1,6 @@
 package com.github.rmannibucau.cookit.api.recipe;
 
+import com.github.rmannibucau.cookit.api.recipe.dependency.Maven;
 import com.github.rmannibucau.cookit.api.task.FileTask;
 import com.github.rmannibucau.cookit.spi.Container;
 import com.github.rmannibucau.cookit.spi.RecipeLifecycle;
@@ -121,6 +122,10 @@ abstract class RecipeBase {
         return new EnhancedFile(Paths.get(first, segments).toFile());
     }
 
+    protected void unzip(final File from, final String to, final boolean stripRoot) {
+        unzip(from.getAbsolutePath(), to, stripRoot);
+    }
+
     protected void unzip(final String from, final String to, final boolean stripRoot) {
         final File source = new File(from);
         if (!source.isFile()) {
@@ -240,12 +245,42 @@ abstract class RecipeBase {
             }
     }
 
+    protected void rmOnExit(final String path) {
+        Runtime.getRuntime().addShutdownHook(new Thread() {
+            @Override
+            public void run() {
+                final File f = new File(path);
+                if (f.isDirectory()) {
+                    rmDir(path);
+                } else if (f.exists()) {
+                    rm(path);
+                }
+            }
+        });
+    }
+
+    protected void ln(final String target, final String link) {
+        try {
+            final Path targetPath = Paths.get(link);
+            if (targetPath.toFile().exists()) {
+                rm(link);
+            }
+            Files.createSymbolicLink(targetPath, Paths.get(target));
+        } catch (final IOException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
     protected void rm(final String path) {
             try {
                 Files.deleteIfExists(Paths.get(path));
             } catch (final IOException e) {
                 throw new IllegalStateException(e);
             }
+    }
+
+    protected File mvn(final String coordinates) {
+        return container().lookup(Maven.class).resolve(coordinates);
     }
 
     /**

@@ -1,6 +1,7 @@
 package com.github.rmannibucau.cookit.maven.resolver;
 
 import com.github.rmannibucau.cookit.api.environment.Value;
+import com.github.rmannibucau.cookit.api.recipe.dependency.Maven;
 import org.apache.maven.repository.internal.MavenRepositorySystemUtils;
 import org.eclipse.aether.DefaultRepositorySystemSession;
 import org.eclipse.aether.RepositorySystem;
@@ -25,13 +26,12 @@ import javax.inject.Inject;
 import static java.util.Arrays.asList;
 
 @ApplicationScoped
-public class MavenResolver {
-    private LocalRepository localRepository;
+public class MavenResolver implements Maven {
     private DefaultRepositorySystemSession session;
     private RepositorySystem repositorySystem;
 
     @Inject
-    @Value(key = "cookit.maven.localRepository", or = "${user.home}/.m2/repository/")
+    @Value(key = "cookit.maven.localRepository", or = "${user.home}/.cookit/m2/repository/")
     private String localRepositoryPath;
 
     @Inject
@@ -70,16 +70,12 @@ public class MavenResolver {
 
     public void changeRepository(final String path) {
         localRepositoryPath = path;
-        localRepository = new LocalRepository(path);
 
         session = new DefaultRepositorySystemSession();
-        session.setLocalRepositoryManager(repositorySystem.newLocalRepositoryManager(session, localRepository));
+        session.setLocalRepositoryManager(repositorySystem.newLocalRepositoryManager(session, new LocalRepository(path)));
     }
 
-    public File resolve(final String coords) {
-        return resolve(coords, null);
-    }
-
+    @Override
     public File resolve(final String coords, final String repository) {
         final ArtifactRequest artifactRequest = new ArtifactRequest();
         artifactRequest.setArtifact(new DefaultArtifact(coords));

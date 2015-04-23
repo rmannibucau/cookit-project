@@ -4,6 +4,7 @@ import com.github.rmannibucau.cookit.api.recipe.file.EnhancedFileFilter;
 
 import java.io.File;
 import java.io.FileFilter;
+import java.nio.file.Path;
 import java.util.stream.Stream;
 
 import static java.util.Arrays.asList;
@@ -25,7 +26,11 @@ public class EnhancedFile {
         return files != null ? asList(files).stream() : Stream.empty();
     }
 
-    public File getDelegate() {
+    public File asFile() {
         return delegate;
+    }
+
+    public Path asPath() {
+        return delegate.toPath();
     }
 }

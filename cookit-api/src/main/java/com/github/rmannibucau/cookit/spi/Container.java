@@ -15,4 +15,6 @@ public interface Container extends AutoCloseable {
     Map<String, Object> configuration();
 
     void fire(Object event);
+
+    <T> T lookup(Class<T> service);
 }

@@ -43,6 +43,9 @@ public class RecipeLifecycleImpl implements RecipeLifecycle {
 
         final boolean configurationHolder = configuration == null;
         configuration = new RawConfiguration(configurationHolder ? new HashMap<>() : configuration.getMap());
+        if (configurationHolder) {
+            configuration.getMap().putAll(Map.class.cast(System.getProperties()));
+        }
 
         container.inject(builder);
         builder.configure();
