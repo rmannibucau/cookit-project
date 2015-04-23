@@ -1,0 +1,114 @@
+= CooKit
+
+CooKit is a Java Provisioning solution. You write Java all the day? Why using another language to provision
+your instances?
+
+== Common usages
+
+- Setup/Update a server
+- Setup a developper machine
+- ...
+
+== Modules
+
+=== API
+
+The one you use as a user: `com.github.rmannibucau:cookit-api`.
+
+=== Core
+
+The default implementations: `com.github.rmannibucau:cookit-core`.
+
+=== Maven
+
+One `Maven` implementation (+ a maven default recipe): `com.github.rmannibucau:cookit-maven`.
+
+Note this one will rely on `cookit.maven.localRepository` as default repository to resolve artifacts (default set to `${user.home}/.cookit/m2/repository/`).
+
+=== Bundle
+
+A all in one jar (include api + core + maven): `com.github.rmannibucau:cookit-bundle`.
+
+== Getting Started
+
+To write your first recipe just extend `com.github.rmannibucau.cookit.api.recipe.Recipe` and implement `recipe()`.
+
+NOTE: you can also override `configure` if you want to contribute to the system configuration before the recipe is launched.
+
+The default implementation relies on CDI as underlying engine.
+
+[source,numbered,java]
+----
+public class TomcatRecipe extends Recipe {
+    @Inject
+    @Value(key = "tomcat.base", or = "/usr/share/tomcat")
+    private String base;
+
+    @Inject
+    @Value(key = "tomcat.version", or = "8.0.21")
+    private String tomcatVersion;
+
+    @Inject
+    @Value(key = "tomcat.tmp", or = "/tmp/tomcat")
+    private String tmpDir;
+
+    @Inject
+    private Node node;
+
+    @Override
+    public void configure() {
+        id("tomcat");
+        set("cookit.maven.localRepository", Paths.get(tmpDir, "m2"));
+    }
+
+    @Override
+    public void recipe() {
+        rmOnExit(tmpDir);
+
+        // download and unzip tomcat
+        final File zip = mvn("org.apache.tomcat:tomcat:zip:" + tomcatVersion);
+        unzip(zip, base, true);
+
+        // make scripts executables
+        final Consumer<File> setExecutable = f -> f.setExecutable(true);
+        final EnhancedFileFilter<String> filterByExtension = (f, e) -> f.getName().endsWith(e);
+        switch (node.family()) {
+            case "windows":
+                withFile(base, "bin")
+                    .filter(filterByExtension, ".bat")
+                    .forEach(setExecutable);
+            default:
+                withFile(base, "bin")
+                    .filter(filterByExtension, ".sh")
+                    .forEach(setExecutable);
+        }
+    }
+}
+----
+
+== Features
+
+- Configuration injection (system properties, `configure()`, ...): `@Value`
+- basic primitives thanks to `Recipe` inheritance: unzip(), ln(), mvn()...
+- Java 8 friendly
+- Easily executable: `com.github.rmannibucau.cookit.api.recipe.Recipes` is a main able to run a recipe compiled or not (MyRecipe.java).
+- CDI injection in lambda
+
+=== Running a .java
+
+[source]
+----
+$ java -jar cookit-bundle.jar my-recipes/com/github/rmannibucau/cookit/example/TomcatRecipe.java
+----
+
+This feature is relying on `javax.tools.JavaCompiler` availability.
+
+=== CDI and lambda
+
+In all `Recipe` tasks you can use CDI injections:
+
+[source]
+----
+task(CDIBean bean -> bean.somethingImportant());
+----
+
